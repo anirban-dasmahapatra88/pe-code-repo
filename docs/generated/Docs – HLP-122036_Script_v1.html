@@ -1,0 +1,159 @@
+<html>
+<body>
+<h1>HLP-122036_Script_v1.sql</h1>
+<hr/>
+<html>
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#23234a; line-height:1.6; background:#fafbfc;">
+
+    <!-- Header -->
+    <div style="padding:18px 20px; background:#eae6f7; border-left:6px solid #5a3fa3; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#3a277a;">Documentation: HLP-122036_Script_v1.sql</h1>
+      <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
+        Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
+      </p>
+    </div>
+
+    <!-- Section: Overview -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">1. Overview</h2>
+    <p>
+      This document provides a structured explanation of the file <strong>HLP-122036_Script_v1.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
+    </p>
+
+    <!-- Section: Purpose -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">2. Purpose</h2>
+    <p>
+      The script is designed to update records in the <strong>debit_card_event_capture</strong> table for events of type <strong>'ClaimSync'</strong> with status <strong>'Created'</strong> and a non-null <strong>process_run_id</strong>. It also updates session tracking in <strong>Vw_Appsession</strong> for audit purposes. The script is used for operational data correction and audit logging.
+    </p>
+
+    <!-- Section: Parameters / Inputs -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <ul style="margin-left:20px;">
+      <li><strong>status</strong>: Filters records with value 'Created'.</li>
+      <li><strong>process_run_id</strong>: Must be non-null for update.</li>
+      <li><strong>event_type</strong>: Filters records with value 'ClaimSync'.</li>
+      <li><strong>id</strong>: Used in post-update validation.</li>
+    </ul>
+
+    <!-- Section: Example Usage -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">4. Example Usage</h2>
+    <p>The following is an example demonstrating typical usage of the implemented logic:</p>
+    <div style="background:#f7f7f7; border:1px solid #cfcfe7; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+--tab=before
+select * from debit_card_event_capture where status='Created' and process_run_id is not null and event_type='ClaimSync';
+Begin
+  Update Vw_Appsession v
+     Set v.Last_Change_By   = user,
+         v.Last_Change_Thru = 'HLP-107535-Script_' || to_Char(sysdate, 'ddMonYYYY');
+ 
+  update debit_card_event_capture ddc set ddc.status='Created',ddc.process_run_id=null,ddc.process_log_id=null,ddc.queued_on=null
+   where status='Created' and process_run_id is not null and event_type='ClaimSync';
+  
+  dbms_output.put_line('No of rows updated is: ' || sql%rowcount);
+  Update Vw_Appsession v
+     Set v.Last_Change_By = null, v.Last_Change_Thru = null;
+End;
+/
+--tab=after
+select * from debit_card_event_capture where status='Created' and event_type='ClaimSync' and id in (13611033,13611040,13407886,12663777,12663375);
+    </div>
+
+    <!-- Section: Control Validation SQLs -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">5. Control Validation SQLs</h2>
+    <p>
+      Below are SQLs for validating the script's effect, with positive and negative data scenarios and sample data.
+    </p>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Positive Scenario:</strong>  
+        <div style="background:#f7f7f7; border:1px solid #cfcfe7; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Sample Data  
+insert into debit_card_event_capture (id, status, process_run_id, event_type) values (20001, 'Created', 12345, 'ClaimSync');
+-- Validation SQL  
+select * from debit_card_event_capture where status='Created' and process_run_id is null and event_type='ClaimSync' and id=20001;
+        </div>
+        <span style="color:#2e7d32;">Expected: Record with id=20001 should have process_run_id as null after script execution.</span>
+      </li>
+      <li>
+        <strong>Negative Scenario:</strong>
+        <div style="background:#f7f7f7; border:1px solid #cfcfe7; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Sample Data  
+insert into debit_card_event_capture (id, status, process_run_id, event_type) values (20002, 'Completed', 54321, 'ClaimSync');
+-- Validation SQL  
+select * from debit_card_event_capture where status='Completed' and process_run_id is not null and event_type='ClaimSync' and id=20002;
+        </div>
+        <span style="color:#c62828;">Expected: Record with id=20002 should remain unchanged as status is not 'Created'.</span>
+      </li>
+    </ul>
+
+    <!-- Section: Code Improvement Suggestions -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">6. Code Improvement Suggestions</h2>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Suggestion:</strong> Use explicit transaction control and error handling for reliability.<br/>
+        <strong>Explanation:</strong> The current script does not handle exceptions or commit/rollback explicitly, which may lead to partial updates or untracked errors.
+      </li>
+      <li>
+        <strong>Modified Code:</strong>
+        <div style="background:#f7f7f7; border:1px solid #cfcfe7; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+DECLARE
+  v_rows_updated NUMBER;
+BEGIN
+  Update Vw_Appsession v
+     Set v.Last_Change_By   = user,
+         v.Last_Change_Thru = 'HLP-107535-Script_' || to_Char(sysdate, 'ddMonYYYY');
+  
+  update debit_card_event_capture ddc
+     set ddc.status='Created', ddc.process_run_id=null, ddc.process_log_id=null, ddc.queued_on=null
+   where status='Created' and process_run_id is not null and event_type='ClaimSync';
+  v_rows_updated := sql%rowcount;
+  
+  dbms_output.put_line('No of rows updated is: ' || v_rows_updated);
+  
+  Update Vw_Appsession v
+     Set v.Last_Change_By = null, v.Last_Change_Thru = null;
+  
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+    dbms_output.put_line('Error: ' || SQLERRM);
+END;
+/
+        </div>
+        <strong>Data Scenario:</strong>  
+        <ul>
+          <li>Insert a record with status='Created', process_run_id=12345, event_type='ClaimSync'.</li>
+          <li>Run the improved script. The record should be updated and changes committed. If an error occurs, no partial update remains.</li>
+        </ul>
+      </li>
+    </ul>
+
+    <!-- Section: Dependencies -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">7. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>Oracle Database</li>
+      <li>debit_card_event_capture table</li>
+      <li>Vw_Appsession view</li>
+      <li>DBMS_OUTPUT package</li>
+    </ul>
+
+    <!-- Section: Notes -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">8. Notes</h2>
+    <ul style="margin-left:20px;">
+      <li>Ensure proper backup before running update scripts.</li>
+      <li>Performance may be impacted if table size is large; consider batch processing.</li>
+      <li>Script does not use ANSI join style, as per Oracle standards.</li>
+      <li>Exception handling and transaction control are recommended for production use.</li>
+      <li>Potential enhancement: Add logging for audit trail and batch processing for scalability.</li>
+    </ul>
+
+    <!-- Section: Summary -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">9. Summary</h2>
+    <p>
+      <strong>HLP-122036_Script_v1.sql</strong> is a corrective script for operational and audit purposes in the debit card event processing workflow. The documentation summarizes its purpose, behavior, input expectations, and dependencies, supporting maintainability and safe integration.
+    </p>
+
+  </body>
+</html>
+</body>
+</html>
