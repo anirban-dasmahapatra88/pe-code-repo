@@ -1,0 +1,162 @@
+<html>
+<body>
+<h1>Fiserv_BalanceChange_Event_Update_Prior_Elct_Script.sql</h1>
+<hr/>
+<html>
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#232323; line-height:1.6; background:#fff;">
+    <!-- Header -->
+    <div style="padding:18px 20px; background:#f4f1fa; border-left:6px solid #7A4CB1; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#4A2E8E;">Documentation: Fiserv_BalanceChange_Event_Update_Prior_Elct_Script.sql</h1>
+      <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
+        Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
+      </p>
+    </div>
+
+    <!-- Section: Overview -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">1. Overview</h2>
+    <p>
+      This document provides a structured explanation of the file <strong>Fiserv_BalanceChange_Event_Update_Prior_Elct_Script.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
+    </p>
+
+    <!-- Section: Purpose -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">2. Purpose</h2>
+    <p>
+      The script updates <strong>debit_card_event_capture</strong> records related to expired elections, marking them as 'Ignored' if they meet specific criteria. It ensures that only relevant events are processed and logs the execution status for audit and troubleshooting.
+    </p>
+
+    <!-- Section: Parameters / Inputs -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <ul style="margin-left:20px;">
+      <li><strong>IDENTIFIER_TYPE:</strong> Should be 'ELECTION'.</li>
+      <li><strong>Status:</strong> Should be 'Created'.</li>
+      <li><strong>Event_Type:</strong> Should be 'BalanceChange' or 'BalanceZero'.</li>
+      <li><strong>Election End Date:</strong> Must be before current date (expired).</li>
+      <li><strong>dc_purse:</strong> No purse record should exist for the election.</li>
+    </ul>
+
+    <!-- Section: Control Validation SQLs -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">4. Control Validation SQLs</h2>
+    <p>
+      <strong>Positive Scenario:</strong> Data meets criteria and is updated to 'Ignored'.
+    </p>
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Example Data
+Insert into election (id, ee_id, erac_ends) values (1001, 2001, to_date('2024-05-01','YYYY-MM-DD'));
+Insert into debit_card_event_capture (id, identifier_id, IDENTIFIER_TYPE, status, Event_Type) values (5001, 1001, 'ELECTION', 'Created', 'BalanceChange');
+
+-- No purse record for election 1001
+
+-- Validation SQL
+Select dcec.id, dcec.status, dcec.Processed_By
+  From debit_card_event_capture dcec, election el
+ Where dcec.identifier_id = el.id
+   And dcec.IDENTIFIER_TYPE = 'ELECTION'
+   And dcec.status = 'Ignored'
+   And dcec.Event_Type = 'BalanceChange'
+   And el.erac_ends < sysdate;
+    </div>
+    <p>
+      <strong>Negative Scenario:</strong> Data does not meet criteria and is not updated.
+    </p>
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Example Data
+Insert into election (id, ee_id, erac_ends) values (1002, 2002, to_date('2024-12-01','YYYY-MM-DD'));
+Insert into debit_card_event_capture (id, identifier_id, IDENTIFIER_TYPE, status, Event_Type) values (5002, 1002, 'ELECTION', 'Created', 'BalanceChange');
+
+-- Validation SQL
+Select dcec.id, dcec.status
+  From debit_card_event_capture dcec, election el
+ Where dcec.identifier_id = el.id
+   And dcec.IDENTIFIER_TYPE = 'ELECTION'
+   And dcec.status = 'Created'
+   And dcec.Event_Type = 'BalanceChange'
+   And el.erac_ends > sysdate;
+    </div>
+
+    <!-- Section: Example Usage -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">5. Example Usage</h2>
+    <p>
+      Typical usage involves running the script to update expired election events and then validating the update:
+    </p>
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Run script
+
+-- Validate updated records
+Select *
+  From debit_card_event_capture
+ Where Status = 'Ignored'
+   And Processed_By = 'Fiserv_BalanceChange_Update_Script'
+   And Trunc(Processed_On) = Trunc(Sysdate)
+   And Processed_Through = 'HLP-114346';
+    </div>
+
+    <!-- Section: Dependencies -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">6. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>CLM_DBCRD_Cache_Util (internal utility package)</li>
+      <li>Oracle DBMS_OUTPUT (logging)</li>
+      <li>debit_card_event_capture, election, dc_purse tables</li>
+      <li>Vw_Appsession view</li>
+    </ul>
+
+    <!-- Section: Code Improvement Suggestions -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">7. Code Improvement Suggestions</h2>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Use explicit JOINs for clarity:</strong> While Oracle supports comma joins, explicit JOINs improve readability and reduce errors.
+      </li>
+      <li>
+        <strong>Bulk update instead of row-by-row:</strong> Use a single UPDATE statement to improve performance and reduce context switches.
+      </li>
+      <li>
+        <strong>Enhanced error handling:</strong> Log errors to a dedicated table for audit and troubleshooting.
+      </li>
+    </ul>
+    <p>
+      <strong>Modified Code Example:</strong>
+    </p>
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Bulk Update Example
+Update debit_card_event_capture dcec
+   Set Status = 'Ignored',
+       Processed_By = 'Fiserv_BalanceChange_Update_Script',
+       Processed_On = SYSTIMESTAMP,
+       Processed_Through = 'HLP-114346'
+ Where dcec.IDENTIFIER_TYPE = 'ELECTION'
+   And dcec.status = 'Created'
+   And dcec.Event_Type In ('BalanceChange', 'BalanceZero')
+   And Exists (
+         Select 1
+           From election el
+          Where el.id = dcec.identifier_id
+            And CLM_DBCRD_Cache_Util.GetElctEndDateWithGrace(el.id, el.ee_id) < Sysdate
+        )
+   And Not Exists (
+         Select 1
+           From dc_purse dcp
+          Where dcp.elct_id = dcec.identifier_id
+        );
+
+-- Data Scenario: 
+-- Insert test data as in validation section, run the bulk update, and validate with the after-data SQL.
+    </div>
+
+    <!-- Section: Notes -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">8. Notes</h2>
+    <ul style="margin-left:20px;">
+      <li>Ensure proper indexing on identifier_id and event_type for performance.</li>
+      <li>Bulk updates reduce processing time and minimize locking issues.</li>
+      <li>Consider transaction management for rollback in case of errors.</li>
+      <li>Logging to a table is preferable for production environments.</li>
+      <li>Review and refactor for maintainability and scalability.</li>
+    </ul>
+
+    <!-- Section: Summary -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">9. Summary</h2>
+    <p>
+      <strong>Fiserv_BalanceChange_Event_Update_Prior_Elct_Script.sql</strong> automates the update of expired election events, ensuring data integrity and auditability. The suggested improvements enhance performance, maintainability, and error handling, supporting robust business operations.
+    </p>
+  </body>
+</html>
+</body>
+</html>
