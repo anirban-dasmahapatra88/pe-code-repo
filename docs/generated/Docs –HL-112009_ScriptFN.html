@@ -1,0 +1,154 @@
+<html>
+<body>
+<h1>HL-112009_ScriptFN.sql</h1>
+<hr/>
+<html>
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#23234c; line-height:1.6; background:#fafbfc;">
+
+    <!-- Header -->
+    <div style="padding:18px 20px; background:#eae6f8; border-left:6px solid #5B3FA2; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#3A237E;">Documentation: HL-112009_ScriptFN.sql</h1>
+      <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
+        Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
+      </p>
+    </div>
+
+    <!-- Section: Overview -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">1. Overview</h2>
+    <p>
+      This document provides a structured explanation of the file <strong>HL-112009_ScriptFN.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
+    </p>
+
+    <!-- Section: Purpose -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">2. Purpose</h2>
+    <p>
+      The script updates specific employee records in the <strong>employee</strong> table and logs session changes in <strong>Vw_Appsession</strong>. It is used for data correction and audit tracking within the HR system.
+    </p>
+
+    <!-- Section: Parameters / Inputs -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <ul style="margin-left:20px;">
+      <li><strong>ID:</strong> Employee identifier (327045, 13386174, 13403438)</li>
+      <li><strong>first_name:</strong> Employee first name to be updated</li>
+      <li><strong>Last_Change_By:</strong> User performing the change (audit)</li>
+      <li><strong>Last_Change_Thru:</strong> Change reference (audit)</li>
+    </ul>
+
+    <!-- Section: Example Usage -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">4. Example Usage</h2>
+    <p>The following is an example demonstrating typical usage of the implemented logic:</p>
+    <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+--Tab=Before Data FN
+SELECT ID, first_name FROM employee WHERE ID IN (327045, 13386174, 13403438);
+
+Update Vw_Appsession v Set v.Last_Change_By = User, v.Last_Change_Thru = 'HLP-112009';
+UPDATE employee SET first_name = 'ESTATE OF JOAN' WHERE ID = 327045;
+UPDATE employee SET first_name = 'CAROLYN' WHERE ID = 13386174;
+UPDATE employee SET first_name = 'BARBARA' WHERE ID = 13403438;
+Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+
+--Tab=After Data FN
+SELECT ID, first_name FROM employee WHERE ID IN (327045, 13386174, 13403438);
+    </div>
+
+    <!-- Section: Control Validation SQLs -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">5. Control Validation SQLs</h2>
+    <p>
+      Below are SQLs for validating the control logic, including positive and negative scenarios with data examples. Oracle join style (non-ANSI) is used.
+    </p>
+    <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Positive Scenario: Validate updated names
+SELECT e.ID, e.first_name
+FROM employee e
+WHERE e.ID IN (327045, 13386174, 13403438)
+AND ((e.ID = 327045 AND e.first_name = 'ESTATE OF JOAN')
+  OR (e.ID = 13386174 AND e.first_name = 'CAROLYN')
+  OR (e.ID = 13403438 AND e.first_name = 'BARBARA'));
+
+-- Negative Scenario: Validate no incorrect names
+SELECT e.ID, e.first_name
+FROM employee e
+WHERE e.ID IN (327045, 13386174, 13403438)
+AND ((e.ID = 327045 AND e.first_name <> 'ESTATE OF JOAN')
+  OR (e.ID = 13386174 AND e.first_name <> 'CAROLYN')
+  OR (e.ID = 13403438 AND e.first_name <> 'BARBARA'));
+
+-- Data Example (before update)
+SELECT e.ID, e.first_name
+FROM employee e
+WHERE e.ID IN (327045, 13386174, 13403438);
+
+-- Data Example (after update)
+SELECT e.ID, e.first_name
+FROM employee e
+WHERE e.ID IN (327045, 13386174, 13403438);
+    </div>
+
+    <!-- Section: Code Improvement Suggestions -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">6. Code Improvement Suggestions</h2>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Batch Updates:</strong> Use a single UPDATE statement with CASE to improve performance and reduce locking.
+      </li>
+      <li>
+        <strong>Audit Logging:</strong> Ensure audit changes are transactional to avoid partial updates.
+      </li>
+      <li>
+        <strong>Error Handling:</strong> Add exception handling for failed updates.
+      </li>
+    </ul>
+    <p><strong>Modified Code Example:</strong></p>
+    <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Improved batch update
+UPDATE employee
+SET first_name = CASE
+  WHEN ID = 327045 THEN 'ESTATE OF JOAN'
+  WHEN ID = 13386174 THEN 'CAROLYN'
+  WHEN ID = 13403438 THEN 'BARBARA'
+  ELSE first_name
+END
+WHERE ID IN (327045, 13386174, 13403438);
+
+-- Transactional audit logging
+BEGIN
+  Update Vw_Appsession v Set v.Last_Change_By = User, v.Last_Change_Thru = 'HLP-112009';
+  -- Employee update as above
+  Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- Log error or rollback as needed
+    NULL;
+END;
+    </div>
+    <p>
+      <strong>Data Scenario:</strong> Batch update ensures all records are updated in one statement, reducing risk of partial updates and improving performance.
+    </p>
+
+    <!-- Section: Dependencies -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">7. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>Oracle Database</li>
+      <li>employee table</li>
+      <li>Vw_Appsession view</li>
+    </ul>
+
+    <!-- Section: Notes -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">8. Notes</h2>
+    <ul style="margin-left:20px;">
+      <li>Ensure user permissions for update operations.</li>
+      <li>Batch updates minimize locking and improve performance.</li>
+      <li>Audit logging should be consistent and transactional.</li>
+      <li>Consider exception handling for robust error management.</li>
+      <li>Potential for refactoring to stored procedures for maintainability.</li>
+    </ul>
+
+    <!-- Section: Summary -->
+    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">9. Summary</h2>
+    <p>
+      <strong>HL-112009_ScriptFN.sql</strong> is a critical script for employee data correction and audit tracking. The documentation summarizes its purpose, behavior, input expectations, and dependencies, supporting maintainability and integration into larger workflows.
+    </p>
+
+  </body>
+</html>
+</body>
+</html>
