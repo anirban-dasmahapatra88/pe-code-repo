@@ -6,183 +6,162 @@
   <body style="font-family:Segoe UI, Arial, sans-serif; color:#23234a; line-height:1.6; background:#fafbfc;">
 
     <!-- Header -->
-    <div style="padding:18px 20px; background:#eae6f7; border-left:6px solid #5a3fa3; margin-bottom:20px;">
-      <h1 style="margin:0; font-size:24px; color:#3a2a6c;">Documentation: HLP-122036_Script_v1.sql</h1>
+    <div style="padding:18px 20px; background:#eae6f7; border-left:6px solid #7A4CB1; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#4A2E8E;">Documentation: HLP-122036_Script_v1.sql</h1>
       <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
         Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
       </p>
     </div>
 
     <!-- Section: Overview -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">1. Overview</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">1. Overview</h2>
     <p>
       This document provides a structured explanation of the file <strong>HLP-122036_Script_v1.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
     </p>
 
     <!-- Section: Purpose -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">2. Purpose</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">2. Purpose</h2>
     <p>
-      The script is designed to update and reset specific fields in the <strong>debit_card_event_capture</strong> table for records with status 'Created', a non-null <strong>process_run_id</strong>, and <strong>event_type</strong> 'ClaimSync'. It also updates session tracking fields in <strong>Vw_Appsession</strong> for audit purposes. The script is used for operational data correction and cleanup.
+      The script is designed to update and reset specific fields in the <strong>debit_card_event_capture</strong> table for events of type <strong>'ClaimSync'</strong> with status <strong>'Created'</strong> and a non-null <strong>process_run_id</strong>. It also updates session tracking fields in <strong>Vw_Appsession</strong> for audit purposes.
     </p>
 
     <!-- Section: Parameters / Inputs -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">3. Parameters / Inputs</h2>
     <ul style="margin-left:20px;">
-      <li><strong>status</strong>: Filters records with value 'Created'.</li>
-      <li><strong>process_run_id</strong>: Must be non-null for update operations.</li>
-      <li><strong>event_type</strong>: Filters records with value 'ClaimSync'.</li>
-      <li><strong>id</strong>: Used in post-update validation for specific records.</li>
+      <li><strong>status</strong>: Filters rows with value 'Created'.</li>
+      <li><strong>process_run_id</strong>: Must be not null for update operations.</li>
+      <li><strong>event_type</strong>: Filters rows with value 'ClaimSync'.</li>
+      <li><strong>id</strong>: Used for selection in post-update validation.</li>
     </ul>
-
-    <!-- Section: Example Usage -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">4. Example Usage</h2>
-    <p>The following is an example demonstrating typical usage of the implemented logic:</p>
-    <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
---tab=before
-select * from debit_card_event_capture where status='Created' and process_run_id is not null and event_type='ClaimSync';
-Begin
-  Update Vw_Appsession v
-     Set v.Last_Change_By   = user,
-         v.Last_Change_Thru = 'HLP-107535-Script_' || to_Char(sysdate, 'ddMonYYYY');
- 
-  update debit_card_event_capture ddc set ddc.status='Created',ddc.process_run_id=null,ddc.process_log_id=null,ddc.queued_on=null
-   where status='Created' and process_run_id is not null and event_type='ClaimSync';
-  
-  dbms_output.put_line('No of rows updated is: ' || sql%rowcount);
-  Update Vw_Appsession v
-     Set v.Last_Change_By = null, v.Last_Change_Thru = null;
-End;
-/
---tab=after
-select * from debit_card_event_capture where status='Created' and event_type='ClaimSync' and id in (13611033,13611040,13407886,12663777,12663375);
-    </div>
 
     <!-- Section: Control Validation SQLs -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">5. Control Validation SQLs</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">4. Control Validation SQLs</h2>
     <p>
-      Below are SQLs for validating the script's effect, covering both positive and negative scenarios with sample data.
+      Below are SQLs for validating the script's effect, with positive and negative scenarios and sample data.
     </p>
-    <ul style="margin-left:20px;">
-      <li>
-        <strong>Positive Scenario:</strong> Validate that records are updated as expected.<br/>
-        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
--- Example Data Before Update
-select id, status, process_run_id, event_type from debit_card_event_capture
-where status='Created' and process_run_id is not null and event_type='ClaimSync';
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Positive Scenario: Rows should be updated (before script execution)
+SELECT * FROM debit_card_event_capture
+WHERE status = 'Created'
+  AND process_run_id IS NOT NULL
+  AND event_type = 'ClaimSync';
 
--- Expected Data After Update
-select id, status, process_run_id, event_type from debit_card_event_capture
-where status='Created' and event_type='ClaimSync' and process_run_id is null;
-        </div>
-      </li>
-      <li>
-        <strong>Negative Scenario:</strong> Validate that records not matching criteria remain unchanged.<br/>
-        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
--- Example Data Not Matching Criteria
-select id, status, process_run_id, event_type from debit_card_event_capture
-where status!='Created' or event_type!='ClaimSync';
+-- Example Data:
+-- id        status    process_run_id    event_type
+-- 13611033  Created   1001              ClaimSync
+-- 13611040  Created   1002              ClaimSync
 
--- Confirm No Update Occurred
-select id, status, process_run_id, event_type from debit_card_event_capture
-where (status!='Created' or event_type!='ClaimSync') and process_run_id is not null;
-        </div>
-      </li>
-      <li>
-        <strong>Sample Data:</strong>
-        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
--- Sample Data Before
-ID        STATUS    PROCESS_RUN_ID    EVENT_TYPE
-13611033  Created   1001             ClaimSync
-13611040  Created   1002             ClaimSync
-13407886  Created   1003             ClaimSync
-12663777  Created   1004             ClaimSync
-12663375  Created   1005             ClaimSync
+-- Negative Scenario: Rows should not be updated (before script execution)
+SELECT * FROM debit_card_event_capture
+WHERE status = 'Created'
+  AND process_run_id IS NULL
+  AND event_type = 'ClaimSync';
 
--- Sample Data After
-ID        STATUS    PROCESS_RUN_ID    EVENT_TYPE
-13611033  Created   NULL             ClaimSync
-13611040  Created   NULL             ClaimSync
-13407886  Created   NULL             ClaimSync
-12663777  Created   NULL             ClaimSync
-12663375  Created   NULL             ClaimSync
-        </div>
-      </li>
-    </ul>
+-- Example Data:
+-- id        status    process_run_id    event_type
+-- 13407886  Created   NULL              ClaimSync
 
-    <!-- Section: Dependencies -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">6. Dependencies</h2>
-    <ul style="margin-left:20px;">
-      <li>Oracle Database</li>
-      <li>debit_card_event_capture table</li>
-      <li>Vw_Appsession view</li>
-      <li>DBMS_OUTPUT package</li>
-    </ul>
+-- Validation After Script Execution (should have process_run_id NULL)
+SELECT * FROM debit_card_event_capture
+WHERE status = 'Created'
+  AND event_type = 'ClaimSync'
+  AND id IN (13611033, 13611040, 13407886, 12663777, 12663375);
+
+-- Data Example After Update:
+-- id        status    process_run_id    event_type
+-- 13611033  Created   NULL              ClaimSync
+-- 13611040  Created   NULL              ClaimSync
+-- 13407886  Created   NULL              ClaimSync
+    </div>
 
     <!-- Section: Code Improvement Suggestions -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">7. Code Improvement Suggestions</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">5. Code Improvement Suggestions</h2>
     <ul style="margin-left:20px;">
       <li>
-        <strong>Suggestion:</strong> Use explicit transaction control and error handling for reliability.<br/>
-        <em>Explanation:</em> The current script does not handle exceptions or commit/rollback explicitly. Adding transaction control ensures data integrity and clear error reporting.
-        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
--- Improved Script with Error Handling
+        <strong>Suggestion:</strong> Use explicit transaction control and error handling for reliability.
+        <br/>
+        <span style="color:#4A2E8E;">Explanation:</span> The current script does not handle exceptions or commit/rollback explicitly. Adding transaction control ensures data integrity and clear error reporting.
+      </li>
+      <li>
+        <strong>Suggestion:</strong> Minimize session table updates to only affected sessions.
+        <br/>
+        <span style="color:#4A2E8E;">Explanation:</span> The script updates all rows in <strong>Vw_Appsession</strong>. Restricting updates to relevant sessions improves performance and reduces unnecessary changes.
+      </li>
+      <li>
+        <strong>Suggestion:</strong> Log affected row IDs for traceability.
+        <br/>
+        <span style="color:#4A2E8E;">Explanation:</span> Outputting updated row IDs helps in audit and troubleshooting.
+      </li>
+    </ul>
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+-- Improved Script Example
 DECLARE
-  v_rows_updated NUMBER;
+  v_count NUMBER;
 BEGIN
-  Update Vw_Appsession v
-     Set v.Last_Change_By   = user,
-         v.Last_Change_Thru = 'HLP-107535-Script_' || to_Char(sysdate, 'ddMonYYYY');
+  -- Update session only for relevant users (example: where session is active)
+  UPDATE Vw_Appsession v
+     SET v.Last_Change_By   = USER,
+         v.Last_Change_Thru = 'HLP-107535-Script_' || TO_CHAR(SYSDATE, 'ddMonYYYY')
+   WHERE v.session_status = 'ACTIVE';
 
-  update debit_card_event_capture ddc
-     set ddc.status='Created',
-         ddc.process_run_id=null,
-         ddc.process_log_id=null,
-         ddc.queued_on=null
-   where status='Created' and process_run_id is not null and event_type='ClaimSync';
+  -- Update debit_card_event_capture and log affected IDs
+  UPDATE debit_card_event_capture ddc
+     SET ddc.status = 'Created',
+         ddc.process_run_id = NULL,
+         ddc.process_log_id = NULL,
+         ddc.queued_on = NULL
+   WHERE status = 'Created'
+     AND process_run_id IS NOT NULL
+     AND event_type = 'ClaimSync'
+   RETURNING ddc.id BULK COLLECT INTO v_ids;
 
-  v_rows_updated := SQL%ROWCOUNT;
-  dbms_output.put_line('No of rows updated is: ' || v_rows_updated);
+  v_count := SQL%ROWCOUNT;
+  DBMS_OUTPUT.PUT_LINE('No of rows updated: ' || v_count);
+  -- Optionally log IDs
+  -- FOR i IN 1..v_ids.COUNT LOOP
+  --   DBMS_OUTPUT.PUT_LINE('Updated ID: ' || v_ids(i));
+  -- END LOOP;
 
-  Update Vw_Appsession v
-     Set v.Last_Change_By = null, v.Last_Change_Thru = null;
+  -- Reset session changes
+  UPDATE Vw_Appsession v
+     SET v.Last_Change_By = NULL,
+         v.Last_Change_Thru = NULL
+   WHERE v.session_status = 'ACTIVE';
 
   COMMIT;
 EXCEPTION
   WHEN OTHERS THEN
     ROLLBACK;
-    dbms_output.put_line('Error occurred: ' || SQLERRM);
+    DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
 END;
 /
-        </div>
-        <em>Data Scenario:</em> If an error occurs during update, the transaction is rolled back, preventing partial updates and ensuring data consistency.
-      </li>
-      <li>
-        <strong>Suggestion:</strong> Add audit logging for traceability.<br/>
-        <em>Explanation:</em> Recording changes in an audit table improves traceability and compliance.
-        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
--- Example Audit Logging
-insert into debit_card_event_capture_audit
-  (id, change_type, changed_by, change_date)
-select id, 'Reset', user, sysdate
-from debit_card_event_capture
-where status='Created' and process_run_id is not null and event_type='ClaimSync';
-        </div>
-      </li>
+    </div>
+    <p>
+      <strong>Data Scenario:</strong> If session_status is 'ACTIVE', only those sessions are updated. The script logs the number of rows and optionally the IDs affected, improving traceability and error handling.
+    </p>
+
+    <!-- Section: Dependencies -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">6. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>Oracle Database (PL/SQL)</li>
+      <li>debit_card_event_capture table</li>
+      <li>Vw_Appsession view/table</li>
+      <li>DBMS_OUTPUT package</li>
     </ul>
 
     <!-- Section: Notes -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">8. Notes</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">7. Notes</h2>
     <ul style="margin-left:20px;">
-      <li>Ensure backup before running bulk update scripts.</li>
-      <li>Performance may be impacted for large datasets; consider batch processing.</li>
-      <li>Script does not use ANSI join style, as per Oracle SQL best practices for legacy environments.</li>
-      <li>Enhancements can include parameterization, modularization, and improved logging.</li>
+      <li>Ensure proper privileges for updating tables/views.</li>
+      <li>Performance may be impacted if session table is large.</li>
+      <li>Script does not currently handle exceptions or commit/rollback.</li>
+      <li>Consider refactoring for modularity and maintainability.</li>
     </ul>
 
     <!-- Section: Summary -->
-    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">9. Summary</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">8. Summary</h2>
     <p>
-      <strong>HLP-122036_Script_v1.sql</strong> is a critical operational script for resetting and auditing debit card event records. The documentation provides validation SQLs, improvement suggestions, and technical notes to support safe and effective usage in production environments.
+      <strong>HLP-122036_Script_v1.sql</strong> is a key script for managing event capture and session audit in the system. The documentation provides validation SQLs, improvement suggestions, and technical notes to support maintainability and operational reliability.
     </p>
 
   </body>
