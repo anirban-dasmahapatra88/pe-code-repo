@@ -3,40 +3,40 @@
 <h1>HL-112009_ScriptFN.sql</h1>
 <hr/>
 <html>
-  <body style="font-family:Segoe UI, Arial, sans-serif; color:#23234a; line-height:1.6; background:#fff;">
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#23213a; line-height:1.6; background:#fff;">
     <!-- Header -->
-    <div style="padding:18px 20px; background:#eae6f7; border-left:6px solid #5B3FA2; margin-bottom:20px;">
-      <h1 style="margin:0; font-size:24px; color:#3A2376;">Documentation: HL-112009_ScriptFN.sql</h1>
+    <div style="padding:18px 20px; background:#f4f1fa; border-left:6px solid #7A4CB1; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#4A2E8E;">Documentation: HL-112009_ScriptFN.sql</h1>
       <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
         Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
       </p>
     </div>
 
     <!-- Section: Overview -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">1. Overview</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">1. Overview</h2>
     <p>
-      This document explains <strong>HL-112009_ScriptFN.sql</strong>, detailing its purpose, parameters, usage, dependencies, validation controls, and improvement suggestions for technical review and business reference.
+      This document provides a structured explanation of the file <strong>HL-112009_ScriptFN.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
     </p>
 
     <!-- Section: Purpose -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">2. Purpose</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">2. Purpose</h2>
     <p>
-      The script updates specific employee records in the <strong>employee</strong> table and logs session changes in <strong>Vw_Appsession</strong>. It is used for data correction and audit tracking within HR or payroll systems.
+      The script updates specific employee records in the <strong>employee</strong> table and logs session changes in <strong>Vw_Appsession</strong>. It is used for data correction and audit tracking, ensuring that employee names are updated as per business requirements and session changes are recorded for traceability.
     </p>
 
     <!-- Section: Parameters / Inputs -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">3. Parameters / Inputs</h2>
     <ul style="margin-left:20px;">
       <li><strong>ID:</strong> Employee identifier (327045, 13386174, 13403438)</li>
       <li><strong>first_name:</strong> Employee first name to be updated</li>
-      <li><strong>Last_Change_By:</strong> User performing the change</li>
-      <li><strong>Last_Change_Thru:</strong> Source of change (e.g., script reference)</li>
+      <li><strong>User:</strong> Current user performing the update (for audit)</li>
+      <li><strong>Last_Change_Thru:</strong> Audit reference for the change</li>
     </ul>
 
     <!-- Section: Example Usage -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">4. Example Usage</h2>
-    <p>Typical usage for updating employee names and session audit:</p>
-    <div style="background:#f7f7fa; border:1px solid #cfcbe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">4. Example Usage</h2>
+    <p>The following is an example demonstrating typical usage of the implemented logic:</p>
+    <div style="background:#f7f7f7; border:1px solid #ddd; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
 --Tab=Before Data FN
 SELECT ID, first_name FROM employee WHERE ID IN (327045, 13386174, 13403438);
 
@@ -51,119 +51,128 @@ SELECT ID, first_name FROM employee WHERE ID IN (327045, 13386174, 13403438);
     </div>
 
     <!-- Section: Control Validation SQLs -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">5. Control Validation SQLs</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">5. Control Validation SQLs</h2>
     <p>
-      Validation SQLs ensure data integrity and correctness. Below are positive and negative scenarios with data examples:
+      Below are SQLs for validating the control logic, including positive and negative scenarios with data examples. Oracle SQLs use traditional join syntax.
     </p>
     <ul style="margin-left:20px;">
       <li>
         <strong>Positive Scenario:</strong> Validate that updates are applied correctly.
-        <div style="background:#f7f7fa; border:1px solid #cfcbe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
-SELECT ID, first_name FROM employee WHERE ID = 327045 AND first_name = 'ESTATE OF JOAN';
-SELECT ID, first_name FROM employee WHERE ID = 13386174 AND first_name = 'CAROLYN';
-SELECT ID, first_name FROM employee WHERE ID = 13403438 AND first_name = 'BARBARA';
+        <div style="background:#f7f7f7; border:1px solid #ddd; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT e.ID, e.first_name
+FROM employee e
+WHERE e.ID = 327045 AND e.first_name = 'ESTATE OF JOAN';
+
+-- Expected Result: Returns row with ID 327045 and first_name 'ESTATE OF JOAN'
         </div>
-        <span style="color:#2e7d32;">Expected Result: Each query returns one row with the correct updated name.</span>
       </li>
       <li>
-        <strong>Negative Scenario:</strong> Validate that no incorrect updates exist.
-        <div style="background:#f7f7fa; border:1px solid #cfcbe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
-SELECT ID, first_name FROM employee WHERE ID = 327045 AND first_name != 'ESTATE OF JOAN';
-SELECT ID, first_name FROM employee WHERE ID = 13386174 AND first_name != 'CAROLYN';
-SELECT ID, first_name FROM employee WHERE ID = 13403438 AND first_name != 'BARBARA';
+        <strong>Negative Scenario:</strong> Validate that no incorrect data exists.
+        <div style="background:#f7f7f7; border:1px solid #ddd; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT e.ID, e.first_name
+FROM employee e
+WHERE e.ID = 327045 AND e.first_name != 'ESTATE OF JOAN';
+
+-- Expected Result: No rows returned if update is successful
         </div>
-        <span style="color:#c62828;">Expected Result: Each query returns zero rows, confirming no incorrect data remains.</span>
       </li>
       <li>
-        <strong>Audit Validation:</strong> Ensure session audit is logged.
-        <div style="background:#f7f7fa; border:1px solid #cfcbe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
-SELECT * FROM Vw_Appsession WHERE Last_Change_Thru = 'HLP-112009';
+        <strong>Audit Validation:</strong> Ensure session changes are logged.
+        <div style="background:#f7f7f7; border:1px solid #ddd; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT v.Last_Change_By, v.Last_Change_Thru
+FROM Vw_Appsession v
+WHERE v.Last_Change_Thru = 'HLP-112009';
+
+-- Expected Result: Returns session rows with audit reference 'HLP-112009'
         </div>
-        <span style="color:#2e7d32;">Expected Result: Audit entry exists for the script execution.</span>
       </li>
     </ul>
 
     <!-- Section: Data Example -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">6. Data Example</h2>
-    <div style="background:#f7f7fa; border:1px solid #cfcbe6; padding:8px; border-radius:4px;">
-      <table style="width:100%; border-collapse:collapse;">
-        <tr style="background:#eae6f7;">
-          <th style="padding:6px; border:1px solid #cfcbe6;">ID</th>
-          <th style="padding:6px; border:1px solid #cfcbe6;">first_name (Before)</th>
-          <th style="padding:6px; border:1px solid #cfcbe6;">first_name (After)</th>
-        </tr>
-        <tr>
-          <td style="padding:6px; border:1px solid #cfcbe6;">327045</td>
-          <td style="padding:6px; border:1px solid #cfcbe6;">JOAN</td>
-          <td style="padding:6px; border:1px solid #cfcbe6;">ESTATE OF JOAN</td>
-        </tr>
-        <tr>
-          <td style="padding:6px; border:1px solid #cfcbe6;">13386174</td>
-          <td style="padding:6px; border:1px solid #cfcbe6;">CAROLYN</td>
-          <td style="padding:6px; border:1px solid #cfcbe6;">CAROLYN</td>
-        </tr>
-        <tr>
-          <td style="padding:6px; border:1px solid #cfcbe6;">13403438</td>
-          <td style="padding:6px; border:1px solid #cfcbe6;">BARBARA</td>
-          <td style="padding:6px; border:1px solid #cfcbe6;">BARBARA</td>
-        </tr>
-      </table>
-    </div>
-
-    <!-- Section: Dependencies -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">7. Dependencies</h2>
-    <ul style="margin-left:20px;">
-      <li>Oracle Database (employee, Vw_Appsession tables)</li>
-      <li>Internal HR/Payroll application</li>
-      <li>Session management and audit logging components</li>
-    </ul>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">6. Data Example</h2>
+    <table style="border-collapse:collapse; width:100%; margin-bottom:16px;">
+      <tr style="background:#e2dff0;">
+        <th style="border:1px solid #ccc; padding:6px;">ID</th>
+        <th style="border:1px solid #ccc; padding:6px;">first_name (Before)</th>
+        <th style="border:1px solid #ccc; padding:6px;">first_name (After)</th>
+      </tr>
+      <tr>
+        <td style="border:1px solid #ccc; padding:6px;">327045</td>
+        <td style="border:1px solid #ccc; padding:6px;">JOAN</td>
+        <td style="border:1px solid #ccc; padding:6px;">ESTATE OF JOAN</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #ccc; padding:6px;">13386174</td>
+        <td style="border:1px solid #ccc; padding:6px;">CAROLYN</td>
+        <td style="border:1px solid #ccc; padding:6px;">CAROLYN</td>
+      </tr>
+      <tr>
+        <td style="border:1px solid #ccc; padding:6px;">13403438</td>
+        <td style="border:1px solid #ccc; padding:6px;">BARBARA</td>
+        <td style="border:1px solid #ccc; padding:6px;">BARBARA</td>
+      </tr>
+    </table>
 
     <!-- Section: Code Improvement Suggestions -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">8. Code Improvement Suggestions</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">7. Code Improvement Suggestions</h2>
     <ul style="margin-left:20px;">
       <li>
-        <strong>Suggestion:</strong> Use transaction control to ensure atomicity and rollback in case of errors.
-        <br/>
-        <span style="color:#3A2376;">Explanation:</span> Without transaction control, partial updates may occur if an error happens mid-script. Using <strong>BEGIN</strong> and <strong>COMMIT/ROLLBACK</strong> ensures data consistency.
+        <strong>Suggestion:</strong> Use a single update statement for batch processing and wrap changes in a transaction for atomicity and rollback capability.
       </li>
       <li>
-        <strong>Suggestion:</strong> Parameterize user input and add error handling for audit updates.
-        <br/>
-        <span style="color:#3A2376;">Explanation:</span> Prevents SQL injection and ensures audit fields are updated only if employee updates succeed.
+        <strong>Explanation:</strong> This reduces database calls, improves performance, and ensures data consistency. Audit logging can be handled in a single step.
       </li>
       <li>
-        <strong>Modified Code Example:</strong>
-        <div style="background:#f7f7fa; border:1px solid #cfcbe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+        <strong>Modified Code:</strong>
+        <div style="background:#f7f7f7; border:1px solid #ddd; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
 BEGIN
-  Update Vw_Appsession v Set v.Last_Change_By = User, v.Last_Change_Thru = 'HLP-112009';
-  UPDATE employee SET first_name = 'ESTATE OF JOAN' WHERE ID = 327045;
-  UPDATE employee SET first_name = 'CAROLYN' WHERE ID = 13386174;
-  UPDATE employee SET first_name = 'BARBARA' WHERE ID = 13403438;
-  Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+  -- Start audit
+  UPDATE Vw_Appsession v SET v.Last_Change_By = USER, v.Last_Change_Thru = 'HLP-112009';
+
+  -- Batch update employee names
+  UPDATE employee
+    SET first_name = CASE
+      WHEN ID = 327045 THEN 'ESTATE OF JOAN'
+      WHEN ID = 13386174 THEN 'CAROLYN'
+      WHEN ID = 13403438 THEN 'BARBARA'
+      ELSE first_name
+    END
+  WHERE ID IN (327045, 13386174, 13403438);
+
+  -- End audit
+  UPDATE Vw_Appsession v SET v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+
   COMMIT;
-EXCEPTION
-  WHEN OTHERS THEN
-    ROLLBACK;
-    -- Log error for review
 END;
         </div>
-        <span style="color:#2e7d32;">Scenario: If any update fails, all changes are rolled back, ensuring no partial data correction or audit logging.</span>
       </li>
+      <li>
+        <strong>Data Scenario:</strong> All updates are applied in a single transaction, ensuring either all succeed or none are committed. Audit trail is maintained.
+      </li>
+    </ul>
+
+    <!-- Section: Dependencies -->
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">8. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>Oracle Database</li>
+      <li>employee table</li>
+      <li>Vw_Appsession view</li>
     </ul>
 
     <!-- Section: Notes -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">9. Notes</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">9. Notes</h2>
     <ul style="margin-left:20px;">
-      <li>Ensure employee IDs are valid and exist before running updates.</li>
-      <li>Performance is optimal for small data sets; batch processing may be needed for larger volumes.</li>
-      <li>Audit logging is critical for compliance; verify session updates post-execution.</li>
-      <li>Consider refactoring for parameterization and modularity for future enhancements.</li>
+      <li>Ensure proper user permissions for update operations.</li>
+      <li>Batch processing improves performance and reduces locking.</li>
+      <li>Audit logging is critical for compliance and traceability.</li>
+      <li>Consider error handling and rollback for failed transactions.</li>
+      <li>Potential enhancement: Parameterize IDs and names for flexibility.</li>
     </ul>
 
     <!-- Section: Summary -->
-    <h2 style="color:#5B3FA2; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">10. Summary</h2>
+    <h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0; padding-bottom:6px;">10. Summary</h2>
     <p>
-      <strong>HL-112009_ScriptFN.sql</strong> is a targeted script for employee data correction and audit logging. The provided validation controls, improvement suggestions, and technical notes support robust, compliant, and maintainable operations within business workflows.
+      <strong>HL-112009_ScriptFN.sql</strong> is a targeted script for employee data correction and audit logging. The improvements suggested enhance performance, maintainability, and data integrity, supporting business and compliance requirements.
     </p>
   </body>
 </html>
