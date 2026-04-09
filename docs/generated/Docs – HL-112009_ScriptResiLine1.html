@@ -1,0 +1,146 @@
+<html>
+<body>
+<h1>HL-112009_ScriptResiLine1.sql</h1>
+<hr/>
+<html>
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#23234a; line-height:1.6; background:#fafbfc;">
+
+    <!-- Header -->
+    <div style="padding:18px 20px; background:#eae6f7; border-left:6px solid #5a3fa3; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#3a2770;">Documentation: HL-112009_ScriptResiLine1.sql</h1>
+      <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
+        Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
+      </p>
+    </div>
+
+    <!-- Section: Overview -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">1. Overview</h2>
+    <p>
+      This document provides a structured explanation of the file <strong>HL-112009_ScriptResiLine1.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
+    </p>
+
+    <!-- Section: Purpose -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">2. Purpose</h2>
+    <p>
+      The script updates the <strong>line1</strong> address field for a specific employee (ID: 313856) in the <strong>employee</strong> table. It also logs session changes in <strong>Vw_Appsession</strong> before and after the update. The script is used for address correction and audit tracking.
+    </p>
+
+    <!-- Section: Parameters / Inputs -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <ul style="margin-left:20px;">
+      <li><strong>ID:</strong> Employee identifier (e.g., 313856)</li>
+      <li><strong>line1:</strong> Address line to be updated (e.g., '23306 ANN''S CHOICE WAY')</li>
+      <li><strong>Last_Change_By:</strong> User performing the change</li>
+      <li><strong>Last_Change_Thru:</strong> Source of change (e.g., 'HLP-112009')</li>
+    </ul>
+
+    <!-- Section: Example Usage -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">4. Example Usage</h2>
+    <p>The following is an example demonstrating typical usage of the implemented logic:</p>
+    <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+--Tab=Before Data Resi Line1
+SELECT ID, line1 FROM employee WHERE ID IN (313856);
+
+Update Vw_Appsession v Set v.Last_Change_By = User, v.Last_Change_Thru = 'HLP-112009';
+UPDATE employee SET line1 = '23306 ANN''S CHOICE WAY' WHERE ID = 313856;
+Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+
+--Tab=After Data Resi Line1
+SELECT ID, line1 FROM employee WHERE ID IN (313856);
+    </div>
+
+    <!-- Section: Control Validation SQLs -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">5. Control Validation SQLs</h2>
+    <p>
+      Below are validation SQLs for positive and negative scenarios, including data examples:
+    </p>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Positive Scenario:</strong> Validate that the address was updated correctly.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT ID, line1 FROM employee WHERE ID = 313856 AND line1 = '23306 ANN''S CHOICE WAY';
+-- Expected Result: Returns row with ID 313856 and updated address.
+        </div>
+      </li>
+      <li>
+        <strong>Negative Scenario:</strong> Validate that no other employee's address was changed.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT ID, line1 FROM employee WHERE ID != 313856 AND line1 = '23306 ANN''S CHOICE WAY';
+-- Expected Result: Returns zero rows.
+        </div>
+      </li>
+      <li>
+        <strong>Negative Scenario:</strong> Validate that the address for ID 313856 is not an incorrect value.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT ID, line1 FROM employee WHERE ID = 313856 AND line1 != '23306 ANN''S CHOICE WAY';
+-- Expected Result: Returns zero rows.
+        </div>
+      </li>
+    </ul>
+
+    <!-- Section: Data Example -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">6. Data Example</h2>
+    <ul style="margin-left:20px;">
+      <li>Before Update: <code>ID = 313856, line1 = '123 OLD ADDRESS'</code></li>
+      <li>After Update: <code>ID = 313856, line1 = '23306 ANN''S CHOICE WAY'</code></li>
+    </ul>
+
+    <!-- Section: Code Improvement Suggestions -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">7. Code Improvement Suggestions</h2>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Suggestion:</strong> Use transaction control to ensure atomicity and rollback in case of errors.
+        <br/>
+        <em>Explanation:</em> Wrapping the update statements in a transaction ensures that either all changes are committed or none, preventing partial updates.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+BEGIN
+  Update Vw_Appsession v Set v.Last_Change_By = User, v.Last_Change_Thru = 'HLP-112009';
+  UPDATE employee SET line1 = '23306 ANN''S CHOICE WAY' WHERE ID = 313856;
+  Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+END;
+        </div>
+        <em>Data Scenario:</em> If the employee update fails, session changes are also rolled back, maintaining data integrity.
+      </li>
+      <li>
+        <strong>Suggestion:</strong> Add audit logging for changes to employee address.
+        <br/>
+        <em>Explanation:</em> Maintain a history of address changes for compliance and traceability.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+INSERT INTO employee_address_audit (employee_id, old_line1, new_line1, changed_by, changed_at)
+SELECT ID, line1, '23306 ANN''S CHOICE WAY', User, SYSDATE FROM employee WHERE ID = 313856;
+        </div>
+        <em>Data Scenario:</em> Audit table records each change, supporting future reviews.
+      </li>
+    </ul>
+
+    <!-- Section: Dependencies -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">8. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>Oracle Database (employee, Vw_Appsession tables)</li>
+      <li>Session management logic (User context)</li>
+      <li>Audit table (if implemented)</li>
+    </ul>
+
+    <!-- Section: Notes -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">9. Notes</h2>
+    <ul style="margin-left:20px;">
+      <li>Ensure proper user context is set for session updates.</li>
+      <li>Consider transaction control for reliability.</li>
+      <li>Address field updates should be audited for compliance.</li>
+      <li>Potential for enhancement: parameterize employee ID and address for broader use.</li>
+    </ul>
+
+    <!-- Section: Summary -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">10. Summary</h2>
+    <p>
+      <strong>HL-112009_ScriptResiLine1.sql</strong> is a targeted script for updating employee address data and session tracking. The documentation provides validation, improvement suggestions, and technical context to support maintainability and compliance.
+    </p>
+
+  </body>
+</html>
+</body>
+</html>
