@@ -2,36 +2,42 @@
 <body>
 <h1>HL-112009_ScriptResiLine1.sql</h1>
 <hr/>
-<ac:structured-macro ac:name="panel" ac:schema-version="1" ac:macro-id="doc-header">
-  <ac:rich-text-body>
-    <h1 style="color:#4A2E8E; margin-bottom:0;">Documentation: HL-112009_ScriptResiLine1.sql</h1>
-    <p style="color:#5a5a5a; margin-top:4px;">
-      Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
+<html>
+  <body style="font-family:Segoe UI, Arial, sans-serif; color:#23234a; line-height:1.6; background:#fafbfc;">
+
+    <!-- Header -->
+    <div style="padding:18px 20px; background:#eae6f7; border-left:6px solid #5a3fa3; margin-bottom:20px;">
+      <h1 style="margin:0; font-size:24px; color:#3a2a7a;">Documentation: HL-112009_ScriptResiLine1.sql</h1>
+      <p style="margin:4px 0 0; font-size:14px; color:#5a5a5a;">
+        Auto‑generated technical documentation for code review, knowledge sharing, and repository reference.
+      </p>
+    </div>
+
+    <!-- Section: Overview -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">1. Overview</h2>
+    <p>
+      This document provides a structured explanation of the file <strong>HL-112009_ScriptResiLine1.sql</strong>. It describes the purpose of the code, key parameters, usage examples, dependencies, and other relevant technical notes.
     </p>
-  </ac:rich-text-body>
-</ac:structured-macro>
 
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">1. Overview</h2>
-<p>
-  This document provides a structured explanation of the file <strong>HL-112009_ScriptResiLine1.sql</strong>. It describes the purpose, key parameters, usage examples, dependencies, and technical notes for the script.
-</p>
+    <!-- Section: Purpose -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">2. Purpose</h2>
+    <p>
+      The script updates the <strong>line1</strong> address field for a specific employee record in the <strong>employee</strong> table. It also logs session changes in the <strong>Vw_Appsession</strong> view before and after the update. This is typically used for address correction or data quality improvement.
+    </p>
 
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">2. Purpose</h2>
-<p>
-  The script updates the <strong>line1</strong> field in the <strong>employee</strong> table for a specific employee (ID: 313856), reflecting a change in residential address. It also logs the update in the <strong>Vw_Appsession</strong> view for audit purposes, then resets the audit fields.
-</p>
+    <!-- Section: Parameters / Inputs -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">3. Parameters / Inputs</h2>
+    <ul style="margin-left:20px;">
+      <li><strong>ID:</strong> Employee identifier (primary key).</li>
+      <li><strong>line1:</strong> Address line to be updated.</li>
+      <li><strong>Last_Change_By:</strong> User performing the change (in <strong>Vw_Appsession</strong>).</li>
+      <li><strong>Last_Change_Thru:</strong> Change reference (in <strong>Vw_Appsession</strong>).</li>
+    </ul>
 
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">3. Parameters / Inputs</h2>
-<ul>
-  <li><strong>ID</strong>: Employee identifier (e.g., 313856).</li>
-  <li><strong>line1</strong>: New residential address line to be updated.</li>
-  <li><strong>Last_Change_By</strong>: User performing the update (set to current user).</li>
-  <li><strong>Last_Change_Thru</strong>: Change reference (set to 'HLP-112009').</li>
-</ul>
-
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">4. Example Usage</h2>
-<p>Below is the original script logic:</p>
-<ac:code ac:language="sql">
+    <!-- Section: Example Usage -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">4. Example Usage</h2>
+    <p>The following is an example demonstrating typical usage of the implemented logic:</p>
+    <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:12px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
 --Tab=Before Data Resi Line1
 SELECT ID, line1 FROM employee WHERE ID IN (313856);
 
@@ -41,101 +47,98 @@ Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
 
 --Tab=After Data Resi Line1
 SELECT ID, line1 FROM employee WHERE ID IN (313856);
-</ac:code>
+    </div>
 
-<h3 style="color:#4A2E8E;">Control Validation SQLs</h3>
-<p><strong>Positive Scenario:</strong> (Data exists and is updated correctly)</p>
-<ac:code ac:language="sql">
--- Before update: Check current value
-SELECT ID, line1 FROM employee WHERE ID = 313856;
+    <!-- Section: Control Validation SQLs -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">5. Control Validation SQLs</h2>
+    <p>
+      Below are sample SQLs for validating the control logic, including positive and negative data scenarios with data examples. Oracle join style is used (comma-separated tables, WHERE clause for join conditions).
+    </p>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Positive Scenario:</strong> Validate that the address was updated correctly.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT e.ID, e.line1
+FROM employee e
+WHERE e.ID = 313856
+  AND e.line1 = '23306 ANN''S CHOICE WAY';
+        </div>
+        <em>Expected Result:</em> Returns the record with updated address.
+      </li>
+      <li>
+        <strong>Negative Scenario:</strong> Validate that no record exists with the old address after update.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT e.ID, e.line1
+FROM employee e
+WHERE e.ID = 313856
+  AND e.line1 = 'Old Address Example';
+        </div>
+        <em>Expected Result:</em> No rows returned.
+      </li>
+      <li>
+        <strong>Session Change Validation:</strong> Check session log for change reference.
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
+SELECT v.Last_Change_By, v.Last_Change_Thru
+FROM Vw_Appsession v
+WHERE v.Last_Change_Thru = 'HLP-112009';
+        </div>
+        <em>Expected Result:</em> Returns session change details during update.
+      </li>
+    </ul>
 
--- Expected: Returns current address (e.g., '123 OLD STREET')
-
--- Perform update
-UPDATE employee SET line1 = '23306 ANN''S CHOICE WAY' WHERE ID = 313856;
-
--- After update: Validate change
-SELECT ID, line1 FROM employee WHERE ID = 313856;
-
--- Expected: Returns '23306 ANN''S CHOICE WAY'
-</ac:code>
-
-<p><strong>Negative Scenario:</strong> (ID does not exist)</p>
-<ac:code ac:language="sql">
--- Attempt update for non-existent ID
-UPDATE employee SET line1 = '99999 FAKE ADDRESS' WHERE ID = 999999;
-
--- Validate no rows affected
-SELECT ID, line1 FROM employee WHERE ID = 999999;
-
--- Expected: No rows returned, no update performed
-</ac:code>
-
-<h3 style="color:#4A2E8E;">Sample Data</h3>
-<table>
-  <tr>
-    <th>ID</th>
-    <th>line1 (Before)</th>
-    <th>line1 (After)</th>
-  </tr>
-  <tr>
-    <td>313856</td>
-    <td>123 OLD STREET</td>
-    <td>23306 ANN'S CHOICE WAY</td>
-  </tr>
-</table>
-
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">5. Dependencies</h2>
-<ul>
-  <li>employee (table)</li>
-  <li>Vw_Appsession (view)</li>
-  <li>Oracle Database (PL/SQL syntax)</li>
-</ul>
-
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">6. Notes</h2>
-<ul>
-  <li>Ensure the <strong>ID</strong> exists before performing the update to avoid silent failures.</li>
-  <li>Audit fields in <strong>Vw_Appsession</strong> are temporarily set for tracking and then reset.</li>
-  <li>Consider transaction management to ensure atomicity.</li>
-  <li>Potential for improvement in error handling and code clarity.</li>
-</ul>
-
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">7. Code Improvement Suggestions</h2>
-<ul>
-  <li><strong>Validation:</strong> Add existence check before update to prevent unnecessary operations.</li>
-  <li><strong>Transaction Control:</strong> Use explicit transaction blocks to ensure atomicity.</li>
-  <li><strong>Logging:</strong> Add error handling for audit trail consistency.</li>
-</ul>
-
-<h3 style="color:#4A2E8E;">Improved Code Example</h3>
-<ac:code ac:language="sql">
--- Check if employee exists
-DECLARE
-  v_exists NUMBER;
+    <!-- Section: Code Improvement Suggestions -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">6. Code Improvement Suggestions</h2>
+    <ul style="margin-left:20px;">
+      <li>
+        <strong>Suggestion:</strong> Use transaction control to ensure atomicity and rollback in case of errors. Add error handling and logging for audit purposes.
+      </li>
+      <li>
+        <strong>Explanation:</strong> Without transaction control, partial updates may occur if an error happens. Using <code>BEGIN</code>/<code>COMMIT</code>/<code>ROLLBACK</code> ensures data integrity.
+      </li>
+      <li>
+        <strong>Modified Code Example:</strong>
+        <div style="background:#f7f7f7; border:1px solid #cfcfe6; padding:8px; border-radius:4px; font-family:Consolas,monospace; white-space:pre-wrap;">
 BEGIN
-  SELECT COUNT(*) INTO v_exists FROM employee WHERE ID = 313856;
-  IF v_exists = 1 THEN
-    -- Start transaction
-    SAVEPOINT before_update;
-    BEGIN
-      UPDATE Vw_Appsession SET Last_Change_By = USER, Last_Change_Thru = 'HLP-112009';
-      UPDATE employee SET line1 = '23306 ANN''S CHOICE WAY' WHERE ID = 313856;
-      UPDATE Vw_Appsession SET Last_Change_By = NULL, Last_Change_Thru = NULL;
-      COMMIT;
-    EXCEPTION
-      WHEN OTHERS THEN
-        ROLLBACK TO before_update;
-        -- Optionally log error
-    END;
-  END IF;
+  Update Vw_Appsession v Set v.Last_Change_By = User, v.Last_Change_Thru = 'HLP-112009';
+  UPDATE employee SET line1 = '23306 ANN''S CHOICE WAY' WHERE ID = 313856;
+  Update Vw_Appsession v Set v.Last_Change_By = NULL, v.Last_Change_Thru = NULL;
+  COMMIT;
+EXCEPTION
+  WHEN OTHERS THEN
+    ROLLBACK;
+    -- Log error details for audit
 END;
-</ac:code>
+        </div>
+      </li>
+      <li>
+        <strong>Data Scenario:</strong> If the update fails (e.g., invalid ID), the transaction is rolled back and no partial changes are committed.
+      </li>
+    </ul>
 
-<p><strong>Data Scenario:</strong> If ID 313856 does not exist, no update or audit action is performed, reducing unnecessary operations and potential errors.</p>
+    <!-- Section: Dependencies -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">7. Dependencies</h2>
+    <ul style="margin-left:20px;">
+      <li>Oracle Database (employee table, Vw_Appsession view)</li>
+      <li>Session management logic for audit tracking</li>
+      <li>Application user context for <code>User</code> variable</li>
+    </ul>
 
-<h2 style="color:#7A4CB1; border-bottom:2px solid #e2dff0;">8. Summary</h2>
-<p>
-  <strong>HL-112009_ScriptResiLine1.sql</strong> updates an employee's residential address and logs the change for audit. The improved version adds validation, error handling, and transaction control for better reliability and maintainability.
-</p>
+    <!-- Section: Notes -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">8. Notes</h2>
+    <ul style="margin-left:20px;">
+      <li>Ensure <code>User</code> variable is set correctly for audit.</li>
+      <li>Performance is optimal for single-row updates; batch processing may require optimization.</li>
+      <li>Error handling and logging are recommended for production environments.</li>
+      <li>Consider parameterizing address updates for flexibility and security.</li>
+    </ul>
+
+    <!-- Section: Summary -->
+    <h2 style="color:#5a3fa3; border-bottom:2px solid #d6d1e7; padding-bottom:6px;">9. Summary</h2>
+    <p>
+      <strong>HL-112009_ScriptResiLine1.sql</strong> is a targeted script for updating employee address data and session audit tracking. The documentation provides validation SQLs, improvement suggestions, and technical notes to support maintainability and compliance.
+    </p>
+
+  </body>
+</html>
 </body>
 </html>
